@@ -1,0 +1,4 @@
+.BodyContainer {
+  background-color: red;
+  flex-grow: 1 !important;
+}

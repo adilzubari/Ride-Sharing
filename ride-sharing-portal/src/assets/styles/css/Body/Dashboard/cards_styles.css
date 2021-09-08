@@ -1,0 +1,25 @@
+.Dashboard_Cards_Container {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.Dashboard_Card {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background-color: white;
+  display: flex;
+  padding: 0px;
+  width: 32%;
+}
+.Dashboard_Card_Content_Container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+}
+.Dashboard_Card_Main {
+  margin: 0px;
+}
+.Dashboard_Card_Sub {
+  font-weight: lighter;
+}

@@ -1,0 +1,13 @@
+.AppBarHidden {
+  z-index: 1 !important;
+}
+
+.AppBar {
+  box-shadow: 0px 0px 0px 0px rgb(0 0 0 / 0%) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.AppBarLogo {
+  height: 0.5in;
+  margin-right: 0.2in;
+}
