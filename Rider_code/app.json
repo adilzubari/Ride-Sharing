@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "SwiftX Rider",
+    "description": "Fast and Economical Ride Sharing",
+    "slug": "Rider",
+    "privacy": "public",
+    "sdkVersion": "36.0.0",
+    "platforms": ["ios", "android"],
+    "notification": {
+      "icon": "./assets/images/icon-transparent.png"
+    },
+    "version": "4.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon-transparent.png",
+    "splash": {
+      "image": "./assets/images/backgroundj.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "usesAppleSignIn": true,
+      "bundleIdentifier": "com.cust.swiftx",
+      "infoPlist": {
+        "NSLocationAlwaysUsageDescription": "This app uses the location to find rides near you.",
+        "NSLocationWhenInUseUsageDescription": "This app uses the location to find rides near you.",
+        "NSCameraUsageDescription": "This app uses the camera to take your profile picture.",
+        "NSPhotoLibraryUsageDescription": "This app uses Photo Library for uploading the profile picture.",
+        "UIBackgroundModes": ["location", "fetch"]
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyCIsT4T-Sb8c_EjbIGaMOjr7PsYXmUA7bs"
+      }
+    },
+    "android": {
+      "package": "com.cust.swiftx",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA_ROLL"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCIsT4T-Sb8c_EjbIGaMOjr7PsYXmUA7bs"
+        }
+      }
+    },
+    "facebookScheme": "fb688599988473468",
+    "facebookAppId": "688599988473468",
+    "facebookDisplayName": "SwiftX"
+  }
+}
