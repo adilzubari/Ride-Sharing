@@ -16,15 +16,15 @@ function MyStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="RideInProgress"
-        component={RideInProgress}
+        name="Drawer"
+        component={Drawer}
         options={{
           headerShown: false,
         }}
       />
       <Stack.Screen
-        name="Drawer"
-        component={Drawer}
+        name="RideInProgress"
+        component={RideInProgress}
         options={{
           headerShown: false,
         }}

@@ -32,12 +32,14 @@ let DestinationMarked = null;
 let Coords = {};
 
 export default function index(props) {
+  const [Destination, setDestination] = useState(null);
+  const [PickupLocation, setPickupLocation] = useState(null);
   const [state, dispatch] = useStateValue();
   const [CoordsState, setCoordsState] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.015,
-    longitudeDelta: 0.0121,
+    latitude: -20.276535,
+    longitude: 57.56896,
+    latitudeDelta: 0.5,
+    longitudeDelta: 0.5,
   });
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -75,11 +77,17 @@ export default function index(props) {
   //   "Rider":"   613fb28758c39e548e42a376
   // "RIDE_ID":"6141f232184b20b26cc29339","RIDER_ID":"613fb28758c39e548e42a376"
   const GetRides = async () => {
+    // console.log("called");
     if (DestinationMarked == null) return;
+    const asd = DestinationMarked;
+    // console.log("==========>", DestinationMarked);
+    setPickupLocation(asd);
     // if (typeof DestinationMarked != Object) return;
     // console.log(typeof DestinationMarked);
     // return;
     setRideRequested(true);
+    // console.log("going in");
+    // console.log("both", { PickupLocation: DestinationMarked, Destination });
     try {
       // console.log("a", props);
       // return;
@@ -88,7 +96,10 @@ export default function index(props) {
       // });
       // console.log(props);
       // return;
-      await AsyncStorage.setItem("DFRR", JSON.stringify(DestinationMarked));
+      await AsyncStorage.setItem(
+        "DFRR",
+        JSON.stringify({ DestinationMarked, Destination })
+      );
       props.navigation.navigate("Rides");
     } catch (e) {
       console.log(e);
@@ -98,6 +109,20 @@ export default function index(props) {
     }
     setRideRequested(false);
   };
+
+  function SetFirstLocation() {
+    setDestination(DestinationMarked);
+    ref.current?.setAddressText("");
+  }
+
+  // BackHandler.addEventListener("hardwareBackPress", function () {
+  //   if (Destination != null) {
+  //     ref.current?.setAddressText("");
+  //     setDestination(null);
+  //     setPickupLocation(null);
+  //   } else if (props.navigation.)
+  //   return true;
+  // });
 
   return (
     <View>
@@ -118,13 +143,13 @@ export default function index(props) {
                 ? DestinationMarked.street
                 : DestinationMarked.name
             );
-            console.log(DestinationMarked);
+            // console.log(DestinationMarked);
           }}
           // onRegionChangeComplete={(coords) => setCoordsState(coords)}
         >
           {/* <MapViewDirections
-            origin={Route[0]}
-            destination={Route[1]}
+            origin={PickupLocation}
+            destination={Destination}
             apikey={GOOGLE_MAPS_API_KEY}
             strokeWidth={3}
             strokeColor={colors.primary.lighter}
@@ -174,7 +199,9 @@ export default function index(props) {
           }}
         >
           <GooglePlacesAutocomplete
-            placeholder="Destination"
+            placeholder={
+              Destination == null ? "Destination" : "Pickup Location"
+            }
             ref={ref}
             onPress={async (data, details = null) => {
               // 'details' is provided when fetchDetails = true
@@ -241,14 +268,16 @@ export default function index(props) {
           mode="contained"
           dark={true}
           disabled={RideRequested}
-          onPress={() => GetRides()}
+          onPress={() =>
+            Destination == null ? SetFirstLocation() : GetRides()
+          }
         >
           <Text
             style={{
               fontSize: 14,
             }}
           >
-            Search Rides
+            {Destination == null ? "Pickup Location" : "Search Rides"}
           </Text>
         </Button>
 

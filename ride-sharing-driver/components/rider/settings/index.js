@@ -25,7 +25,7 @@ export default function index(props) {
     },
     {
       title: "Country",
-      value: "Pakistan",
+      value: "Mauritius",
     },
     {
       title: "Account Type",

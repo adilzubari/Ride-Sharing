@@ -7,6 +7,7 @@ import {
   Dimensions,
   BackHandler,
   Image,
+  Linking,
 } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import MapViewDirections from "react-native-maps-directions";
@@ -29,6 +30,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StateProvider, useStateValue } from "../../../StateProvider";
 import reducer, { initialState } from "../../../reducer";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const styles = StyleSheet.create({
   container: {
@@ -58,6 +60,8 @@ let Ride = null,
   RIDER_ID;
 
 export default function index(props) {
+  const [ShowDirection, setShowDirection] = useState(false);
+  const [ShowDriverInfo, setShowDriverInfo] = useState(false);
   const z = {
     latitude: 37.78825,
     longitude: -122.4324,
@@ -67,6 +71,8 @@ export default function index(props) {
   const [RideLocation, setRideLocation] = useState(z);
   const [Destination, setDestination] = useState(z);
   const [Region, setRegion] = useState(z);
+
+  const [RiderInfoFetched, setRiderInfoFetched] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -80,23 +86,23 @@ export default function index(props) {
         RIDE_ID: RIDE_ID,
       });
       console.log("-in");
-      await axios.post(
-        a.data[0].Rider.Alpha == ""
-          ? "/ride/update/initial/alpha"
-          : "/ride/update/initial/beta",
-        {
-          RIDER_ID: RIDER_ID,
-          RIDE_ID: RIDE_ID,
-        }
-      );
-      a = null;
-      a = await axios.post("/ride/get/data", {
-        RIDE_ID: RIDE_ID,
-      });
-      console.log("in2");
+      // await axios.post(
+      //   a.data[0].Rider.Alpha == ""
+      //     ? "/ride/update/initial/alpha"
+      //     : "/ride/update/initial/beta",
+      //   {
+      //     RIDER_ID: RIDER_ID,
+      //     RIDE_ID: RIDE_ID,
+      //   }
+      // );
+      // a = null;
+      // a = await axios.post("/ride/get/data", {
+      //   RIDE_ID: RIDE_ID,
+      // });
+      // console.log("in2");
       console.log("Ride Data Fetched", a);
       Ride = a.data[0];
-      console.log(Ride);
+      // console.log(Ride);
       // return;
       let CurrentLocation = await Location.getCurrentPositionAsync({});
       CurrentLocation = {
@@ -109,7 +115,16 @@ export default function index(props) {
       // console.log("=>", CurrentLocation.coords);
       setRideLocation(CurrentLocation);
 
+      // Driver Info
+      Ride.Driver = (
+        await axios.post("/driver/get/data", {
+          DRIVER_ID: Ride.Driver,
+        })
+      ).data[0];
+      console.log("Driver Alpha", Ride.Driver);
+
       // Rider alpha id
+      console.log("==============", Ride.Rider);
       Ride.Rider.Alpha = (
         await axios.post("/rider/get/data", {
           RIDER_ID: Ride.Rider.Alpha,
@@ -126,6 +141,8 @@ export default function index(props) {
         ).data[0];
         console.log("Rider Beta", Ride.Rider);
       }
+
+      setRiderInfoFetched(true);
 
       console.log("in");
       // Ride = JSON.parse(await AsyncStorage.getItem("@Ride"));
@@ -144,6 +161,8 @@ export default function index(props) {
       //   console.log(z.data);
       // }, 5000);
 
+      setShowDriverInfo(true);
+
       setTimeout(() => {
         const a = GetCenterCoords(
           CurrentLocation.latitude,
@@ -154,6 +173,10 @@ export default function index(props) {
         setRegion(a);
         console.log(a);
       }, 1000);
+
+      setTimeout(() => {
+        setShowDirection(true);
+      }, 5000);
     })();
   }, []);
 
@@ -242,13 +265,17 @@ export default function index(props) {
           // onResponderEnd={() => console.log("end")}
           // onRegionChangeComplete={(coords) => setCoordsState(coords)}
         >
-          {/* <MapViewDirections
-            origin={Route[0]}
-            destination={Route[1]}
-            apikey={GOOGLE_MAPS_API_KEY}
-            strokeWidth={3}
-            strokeColor={colors.primary.lighter}
-          /> */}
+          {RideLocation && Destination && (
+            <MapViewDirections
+              lineDashPattern={[0]}
+              origin={RideLocation}
+              destination={Destination}
+              apikey={GOOGLE_MAPS_API_KEY}
+              strokeWidth={5}
+              strokeColor={colors.primary.lighter}
+            />
+          )}
+
           <Marker coordinate={RideLocation}>
             <View>
               <Image
@@ -321,31 +348,52 @@ export default function index(props) {
           }}
         ></View> */}
 
-        <View
-          style={{
-            // backgroundColor: "red",
-            position: "absolute",
-            zIndex: 15,
-            bottom: 50,
-            // left: 0,
-            width: "90%",
-            // height: "100%",
-            backgroundColor: "white",
-            padding: "5%",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <Avatar.Icon
-            icon={() => <Entypo name="user" size={20} color="white" />}
-            size={40}
-          />
-          <View style={{ flex: 1, paddingLeft: 10 }}>
-            <Subheading>Muhammad Adil</Subheading>
-            <RNPText>+923476456793</RNPText>
-          </View>
-          <Entypo name="phone" size={24} color={colors.primary.lighter} />
-        </View>
+        {(() => {
+          if (RiderInfoFetched && Ride != null) {
+            console.log("asdasdasdas", Ride);
+            return (
+              <View
+                style={{
+                  // backgroundColor: "red",
+                  position: "absolute",
+                  zIndex: 15,
+                  bottom: 50,
+                  // left: 0,
+                  width: "90%",
+                  // height: "100%",
+                  backgroundColor: "white",
+                  padding: "5%",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Avatar.Icon
+                  icon={() => <Entypo name="user" size={20} color="white" />}
+                  size={40}
+                />
+                <View style={{ flex: 1, paddingLeft: 10 }}>
+                  <Subheading>{Ride.Driver.Name}</Subheading>
+                  <RNPText>{Ride.Driver.Mobile}</RNPText>
+                </View>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={() => {
+                    Linking.openURL(`tel:${Ride.Driver.Mobile}`);
+                  }}
+                >
+                  <Entypo
+                    name="phone"
+                    size={24}
+                    color={colors.primary.lighter}
+                    style={{
+                      padding: 5,
+                    }}
+                  />
+                </TouchableOpacity>
+              </View>
+            );
+          }
+        })()}
       </View>
     </View>
   );

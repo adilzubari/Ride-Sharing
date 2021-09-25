@@ -1,5 +1,6 @@
 // import { StatusBar } from "expo-status-bar";
-import React from "react";
+import axios from "../../../axios";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StatusBar,
@@ -14,82 +15,97 @@ import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../../../assets/styles/colors";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function index(props) {
-  const history = [
-    {
-      id: "HAKJSDHKJAFAKLHSFLKA",
-      source: "Street 6, Gulbahar",
-      destination: "Kahuta Road",
-      month: "Aug",
-      date: 24,
-      time: "9:45 PM",
-      fare: 320,
-    },
-    {
-      id: "HAKJSDHKJAFAKLHSFLKA",
-      source: "Street 6, Gulbahar",
-      destination: "Kahuta Road",
-      month: "Aug",
-      date: 24,
-      time: "9:45 PM",
-      fare: 320,
-    },
-    {
-      id: "HAKJSDHKJAFAKLHSFLKA",
-      source: "Street 6, Gulbahar",
-      destination: "Kahuta Road",
-      month: "Aug",
-      date: 24,
-      time: "9:45 PM",
-      fare: 320,
-    },
-    {
-      id: "HAKJSDHKJAFAKLHSFLKA",
-      source: "Street 6, Gulbahar",
-      destination: "Kahuta Road",
-      month: "Aug",
-      date: 24,
-      time: "9:45 PM",
-      fare: 320,
-    },
-    {
-      id: "HAKJSDHKJAFAKLHSFLKA",
-      source: "Street 6, Gulbahar",
-      destination: "Kahuta Road",
-      month: "Aug",
-      date: 24,
-      time: "9:45 PM",
-      fare: 320,
-    },
-    {
-      id: "HAKJSDHKJAFAKLHSFLKA",
-      source: "Street 6, Gulbahar",
-      destination: "Kahuta Road",
-      month: "Aug",
-      date: 24,
-      time: "9:45 PM",
-      fare: 320,
-    },
-    {
-      id: "HAKJSDHKJAFAKLHSFLKA",
-      source: "Street 6, Gulbahar",
-      destination: "Kahuta Road",
-      month: "Aug",
-      date: 24,
-      time: "9:45 PM",
-      fare: 320,
-    },
-    {
-      id: "HAKJSDHKJAFAKLHSFLKA",
-      source: "Street 6, Gulbahar",
-      destination: "Kahuta Road",
-      month: "Aug",
-      date: 24,
-      time: "9:45 PM",
-      fare: 320,
-    },
-  ];
+  // const history = [
+  //   {
+  //     id: "HAKJSDHKJAFAKLHSFLKA",
+  //     source: "Street 6, Gulbahar",
+  //     destination: "Kahuta Road",
+  //     month: "Aug",
+  //     date: 24,
+  //     time: "9:45 PM",
+  //     fare: 320,
+  //   },
+  //   {
+  //     id: "HAKJSDHKJAFAKLHSFLKA",
+  //     source: "Street 6, Gulbahar",
+  //     destination: "Kahuta Road",
+  //     month: "Aug",
+  //     date: 24,
+  //     time: "9:45 PM",
+  //     fare: 320,
+  //   },
+  //   {
+  //     id: "HAKJSDHKJAFAKLHSFLKA",
+  //     source: "Street 6, Gulbahar",
+  //     destination: "Kahuta Road",
+  //     month: "Aug",
+  //     date: 24,
+  //     time: "9:45 PM",
+  //     fare: 320,
+  //   },
+  //   {
+  //     id: "HAKJSDHKJAFAKLHSFLKA",
+  //     source: "Street 6, Gulbahar",
+  //     destination: "Kahuta Road",
+  //     month: "Aug",
+  //     date: 24,
+  //     time: "9:45 PM",
+  //     fare: 320,
+  //   },
+  //   {
+  //     id: "HAKJSDHKJAFAKLHSFLKA",
+  //     source: "Street 6, Gulbahar",
+  //     destination: "Kahuta Road",
+  //     month: "Aug",
+  //     date: 24,
+  //     time: "9:45 PM",
+  //     fare: 320,
+  //   },
+  //   {
+  //     id: "HAKJSDHKJAFAKLHSFLKA",
+  //     source: "Street 6, Gulbahar",
+  //     destination: "Kahuta Road",
+  //     month: "Aug",
+  //     date: 24,
+  //     time: "9:45 PM",
+  //     fare: 320,
+  //   },
+  //   {
+  //     id: "HAKJSDHKJAFAKLHSFLKA",
+  //     source: "Street 6, Gulbahar",
+  //     destination: "Kahuta Road",
+  //     month: "Aug",
+  //     date: 24,
+  //     time: "9:45 PM",
+  //     fare: 320,
+  //   },
+  //   {
+  //     id: "HAKJSDHKJAFAKLHSFLKA",
+  //     source: "Street 6, Gulbahar",
+  //     destination: "Kahuta Road",
+  //     month: "Aug",
+  //     date: 24,
+  //     time: "9:45 PM",
+  //     fare: 320,
+  //   },
+  // ];
+
+  const [history, sethistory] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      console.log("Getting History ...");
+      const HistoryRecieved = await axios.post("/rider/history", {
+        Rider_id: await AsyncStorage.getItem("@User_id"),
+      });
+      sethistory(HistoryRecieved.data);
+      console.log("History Recieved =>", HistoryRecieved);
+    })();
+  }, []);
+
   return (
     <View
       style={{
@@ -173,7 +189,9 @@ function HistoryPacket({ ride, index }) {
               color: "rgb(50,50,50)",
             }}
           >
-            {ride.month} {ride.date}, {ride.time}
+            Sep {ride.Created.Date}, 2021 {"       ( "}
+            {ride.Created.Hour}: {ride.Created.Minute}
+            {" )"}
           </Text>
           <Text
             style={{
@@ -181,7 +199,8 @@ function HistoryPacket({ ride, index }) {
               color: "rgb(50,50,50)",
             }}
           >
-            PKR {ride.fare}
+            {/* PKR {ride.fare} */}
+            {""}
           </Text>
         </View>
 
@@ -247,7 +266,8 @@ function HistoryPacket({ ride, index }) {
                 color: "rgb(100,100,100)",
               }}
             >
-              {ride.source}
+              {/* {ride.source} */}
+              Location
             </Text>
             <Text
               style={{
@@ -255,7 +275,7 @@ function HistoryPacket({ ride, index }) {
                 color: "rgb(100,100,100)",
               }}
             >
-              {ride.destination}
+              {ride.Destination.name}
             </Text>
           </View>
         </View>

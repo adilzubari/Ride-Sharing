@@ -5,6 +5,7 @@
 
 import express from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 // Schemas
 import driver_register_request from "./schemas/driver_register_request.js";
 import rider from "./schemas/rider.js";
@@ -23,7 +24,9 @@ const app = express();
 //   })
 // );
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(cors());
 const port = process.env.port || 3000;
 const connection_url =
   "mongodb+srv://amdin:y79LY2ki1qXe2uWB@ridesharing.jyyee.mongodb.net/RideSharing?retryWrites=true&w=majority";
@@ -84,16 +87,128 @@ app.get("/rider", (req, res) => {
   });
 });
 
+app.get("/driver", (req, res) => {
+  driver.find((err, values) => {
+    if (err) res.status(500).send(err);
+    else res.status(200).send(values);
+  });
+});
+
+app.get("/driver/requests", (req, res) => {
+  driver_register_request.find((err, values) => {
+    if (err) res.status(500).send(err);
+    else res.status(200).send(values);
+  });
+});
+app.post("/driver/request/approve", (req, res) => {
+  const body = req.body;
+  driver_register_request.find(
+    { _id: body.id },
+    { IdentityCard: 0, CarDocuments: 0, DrivingLicense: 0 },
+    (err, values) => {
+      if (err) res.status(500).send(err);
+      else {
+        driver.create(
+          {
+            Name: values.Name,
+            Email: values.Email,
+            Mobile: values.Mobile,
+            Vehiclemodel: values.Vehiclemodel,
+            Vehiclenumber: values.Vehiclenumber,
+            Password: values.Password,
+          },
+          (err2, values2) => {
+            if (err2) res.status(500).send(err2);
+            else {
+              driver_register_request.deleteOne(
+                { _id: values._id },
+                (err3, values3) => {
+                  if (err3) res.status(500).send(err3);
+                  else res.status(200).send("ok");
+                }
+              );
+            }
+          }
+        );
+      }
+    }
+  );
+  // else res.status(200).send(values);
+});
+app.post("/driver/request/reject", (req, res) => {
+  const body = req.body;
+  driver_register_request.deleteOne({ _id: body.id }, (err, values) => {
+    if (err) res.status(500).send(err);
+    else res.status(200).send(values);
+  });
+});
+
+app.get("/dashboard", (req, res) => {
+  let rider_count = 0,
+    driver_count = 0,
+    driver_request_count = 0;
+
+  rider.find((err, values) => {
+    if (err) res.status(500).send(err);
+    else {
+      rider_count = values.length;
+      driver.find((err2, values2) => {
+        if (err2) res.status(500).send(err2);
+        else {
+          driver_count = values2.length;
+          driver_register_request.find((err3, values3) => {
+            if (err3) res.status(500).send(err3);
+            else {
+              driver_request_count = values3.length;
+              res.status(200).send({
+                rider_count,
+                driver_count,
+                driver_request_count,
+              });
+            }
+          });
+        }
+      });
+    }
+  });
+});
+
 // -----
 // Rider
 // -----
 app.post("/driver/register", (req, res) => {
   const body = req.body;
 
-  driver_register_request.create(body, (err, data) => {
-    if (err) res.status(500).send(err);
-    else res.status(201).send(data);
-  });
+  // res.status(201).send({
+  //   Name: body.Name,
+  //   Email: body.Email,
+  //   Mobile: body.Mobile,
+  //   Vehiclemodel: body.Vehiclemodel,
+  //   Vehiclenumber: body.Vehiclenumber,
+  //   Password: body.Password,
+  //   IdentityCard: body.IdentityCard.length,
+  //   CarDocuments: body.CarDocuments.length,
+  //   DrivingLicense: body.DrivingLicense.length,
+  // });
+  // return;
+
+  driver_register_request.create(
+    {
+      Name: body.Name,
+      Email: body.Email,
+      Mobile: body.Mobile,
+      Vehiclemodel: body.Vehiclemodel,
+      Vehiclenumber: body.Vehiclenumber,
+      Password: body.Password,
+      IdentityCard: body.IdentityCard,
+      CarDocuments: body.CarDocuments,
+      DrivingLicense: body.DrivingLicense,
+    },
+    (err, data) => {
+      if (err) res.status(500).send(err);
+      else res.status(201).send("ok");
+    }
+  );
 });
 app.post("/driver/authorization", (req, res) => {
   const body = req.body;
@@ -145,6 +260,15 @@ app.post("/driver/ride/create", (req, res) => {
     Direction: "Destination",
     Completed: false,
   };
+  ride.deleteMany({}, (err, data) => {
+    if (err) return;
+  });
+  ride_request.deleteMany({}, (err, data) => {
+    if (err) return;
+  });
+  ride_request_approved.deleteMany({}, (err, data) => {
+    if (err) return;
+  });
   ride.create(body, (err, data) => {
     if (err) res.status(500).send(err);
     else res.status(201).send(data);
@@ -195,12 +319,40 @@ app.post("/rider/get/data", (req, res) => {
     }
   );
 });
+app.post("/driver/get/data", (req, res) => {
+  const body = req.body;
+  driver.find(
+    {
+      _id: body.DRIVER_ID,
+    },
+    (err, values) => {
+      if (err) res.status(500).send(err);
+      else res.status(200).send(values);
+    }
+  );
+});
 app.post("/ride/request", (req, res) => {
   const body = req.body;
   ride_request.create(
     {
       Ride: body.RIDE_ID,
       Rider: body.RIDER_ID,
+      PickupLocation: body.PickupLocation,
+    },
+    (err, values) => {
+      if (err) res.status(500).send(err);
+      else res.status(200).send(values);
+    }
+  );
+});
+
+app.post("/ride/get/request", (req, res) => {
+  const body = req.body;
+  // res.status(200).send("reached");
+  // return;
+  ride_request.findOne(
+    {
+      RIDE_ID: body.RIDE_ID,
     },
     (err, values) => {
       if (err) res.status(500).send(err);
@@ -259,11 +411,33 @@ app.post("/ride/request/approve", (req, res) => {
   ride_request_approved.create(
     {
       Ride: body.RIDE_ID,
-      Rider: RIDER_ID,
+      Rider: body.RIDER_ID,
     },
     (err, values) => {
       if (err) res.status(500).send(err);
-      else res.status(200).send(values);
+      else {
+        ride.find({ _id: body.RIDE_ID }, (err2, ride_info) => {
+          ride.updateOne(
+            { _id: body.RIDE_ID },
+            ride_info[0].Rider.Alpha == ""
+              ? { "Rider.Alpha": body.RIDER_ID }
+              : { "Rider.Beta": body.RIDER_ID },
+            (err3, values3) => {
+              rider.findOne(
+                {
+                  _id: body.RIDER_ID,
+                },
+                (err4, values4) => {
+                  res.status(200).send(values4);
+                  // ride.findOne({ _id: body.RIDE_ID }, (err6, values6) => {
+                  //   res.status(200).send(values6);
+                  // });
+                }
+              );
+            }
+          );
+        });
+      }
     }
   );
 });
@@ -274,6 +448,23 @@ app.post("/ride/get/data", (req, res) => {
   ride.find(
     {
       _id: body.RIDE_ID,
+    },
+    (err, values) => {
+      if (err) res.status(500).send(err);
+      else res.status(200).send(values);
+    }
+  );
+});
+app.post("/ride/action/complete", (req, res) => {
+  const body = req.body;
+  // res.status(200).send(body);
+  // return;
+  ride.update(
+    {
+      _id: body.RIDE_ID,
+    },
+    {
+      "Ride.Completed": true,
     },
     (err, values) => {
       if (err) res.status(500).send(err);
@@ -307,42 +498,45 @@ app.post("/ride/request/status", (req, res) => {
             Ride: body.RIDE_ID,
             Rider: body.RIDER_ID,
           },
-          // (err2, values2) => {
-          //   ride_request_approved.deleteOne(
-          //     {
-          //       RIDE_ID: body.RIDE_ID,
-          //       RIDER_ID: body.RIDER_ID,
-          //     },
-          (err3, values3) => {
-            // res.status(200).send({ approved, _RIDE: true });
-            if (err3) res.status(500).send(err);
-            else res.status(200).send(approved);
-            return;
-            // Get Ride Info
-            ride.find({ _id: body.RIDE_ID }, (err4, values4) => {
-              _RIDE = values4;
-              // Get Driver Info
-              driver.findOne({ _id: _RIDE.Driver_id }, (err5, values5) => {
-                _RIDE.Driver = values5;
-                // now get riders info
-                _RIDE.Rider.Alpha = body.RIDER_ID;
-                rider.findOne({ _id: _RIDE.Rider.Alpha }, (err6, values6) => {
-                  // check if rider 2 has a id
-                  _RIDE.Rider.Alpha = values6;
-                  if (_RIDE.Rider.Beta != "") {
+          (err2, values2) => {
+            ride_request_approved.create(
+              {
+                RIDE_ID: body.RIDE_ID,
+                RIDER_ID: body.RIDER_ID,
+              },
+              (err3, values3) => {
+                // res.status(200).send({ approved, _RIDE: true });
+                if (err3) res.status(500).send(err);
+                else res.status(200).send(approved);
+                return;
+                // Get Ride Info
+                ride.find({ _id: body.RIDE_ID }, (err4, values4) => {
+                  _RIDE = values4;
+                  // Get Driver Info
+                  driver.findOne({ _id: _RIDE.Driver_id }, (err5, values5) => {
+                    _RIDE.Driver = values5;
+                    // now get riders info
+                    _RIDE.Rider.Alpha = body.RIDER_ID;
                     rider.findOne(
                       { _id: _RIDE.Rider.Alpha },
-                      (err7, values7) => {
-                        _RIDE.Rider.Beta = values7;
+                      (err6, values6) => {
+                        // check if rider 2 has a id
+                        _RIDE.Rider.Alpha = values6;
+                        if (_RIDE.Rider.Beta != "") {
+                          rider.findOne(
+                            { _id: _RIDE.Rider.Alpha },
+                            (err7, values7) => {
+                              _RIDE.Rider.Beta = values7;
+                            }
+                          );
+                        }
                       }
                     );
-                  }
+                  });
                 });
-              });
-            });
+              }
+            );
           }
-          //   );
-          // }
         );
       } else res.status(200).send(approved);
 
@@ -379,9 +573,61 @@ app.post("/location/push", (req, res) => {
   );
 });
 
+app.post("/driver/history", (req, res) => {
+  const body = req.body;
+  // res.status(200).send(body);
+  // return;
+  ride.find(
+    {
+      Driver: body.Driver_id,
+      // Completed: true,
+    },
+    (err, values) => {
+      if (err) res.status(500).send(err);
+      else res.status(200).send(values);
+    }
+  );
+});
+app.post("/rider/history", (req, res) => {
+  const body = req.body;
+  // res.status(200).send(body);
+  // return;
+  ride.find(
+    {
+      "Rider.Alpha": body.Rider_id,
+      "Rider.Beta": body.Rider_id,
+    },
+    (err, values) => {
+      if (err) res.status(500).send(err);
+      else res.status(200).send(values);
+    }
+  );
+});
+
 // exports.app = functions.https.onRequest(app);
 
 // Listener
-app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}`);
+// app.listen(port, () => {
+//   console.log(`Listening at http://localhost:${port}`);
+// });
+app.listen(process.env.PORT || 3000, function () {
+  console.log(
+    "Express server listening on port %d in %s mode",
+    this.address().port,
+    app.settings.env
+  );
 });
+
+// "dependencies": {
+//   "axios": "^0.21.4",
+//   "body-parser": "^1.19.0",
+//   "cors": "^2.8.5",
+//   "dotenv": "^10.0.0",
+//   "ejs": "^3.1.6",
+//   "express": "^4.17.1",
+//   "mongoose": "^6.0.5",
+//   "multer": "^1.4.3",
+//   "react-loader-spinner": "^4.0.0",
+//   "react-native-loader": "^1.3.1",
+//   "validator": "^13.6.0"
+// },

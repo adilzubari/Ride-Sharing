@@ -1,6 +1,13 @@
 import axios from "../../../axios";
 import React, { useState, useEffect } from "react";
-import { FlatList, ScrollView, Text, ToastAndroid, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  ScrollView,
+  Text,
+  ToastAndroid,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,8 +18,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StateProvider, useStateValue } from "../../../StateProvider";
 import reducer, { initialState } from "../../../reducer";
 
+let PickupLocation = null,
+  Destination = null;
+
+let CheckCount = 0;
+let CheckCountLimit = 50;
+
 export default function rides(props) {
   const [state, dispatch] = useStateValue();
+  const [NoResults, setNoResults] = useState(true);
   const [Rides, setRides] = useState([]);
 
   // const [AllowedToMakeRequest, setAllowedToMakeRequest] = useState(true);
@@ -21,12 +35,9 @@ export default function rides(props) {
     // const name = item.item.Destination.name;
     const [Requesting, setRequesting] = useState(false);
 
-    let CheckCount = 0;
-    let CheckCountLimit = 5;
-
     let request = false;
 
-    console.log(item);
+    // console.log(item);
     return (
       <View
         style={{
@@ -136,10 +147,11 @@ export default function rides(props) {
       await axios.post("/ride/request", {
         RIDE_ID: RIDE_ID,
         RIDER_ID: RIDER_ID,
+        PickupLocation,
       });
       console.log("Ride Request Completed ...");
       request = true;
-      setTimeout(() => CheckRequestStatus(RIDE_ID, RIDER_ID), 1000);
+      setTimeout(() => CheckRequestStatus(RIDE_ID, RIDER_ID), 5000);
     }
 
     async function CheckRequestStatus(RIDE_ID, RIDER_ID) {
@@ -164,17 +176,13 @@ export default function rides(props) {
         // console.log(state.Ride);
         // dispatch({ type: "SET_RIDE", Ride: Ride.data });
         props.navigation.navigate("RideInProgress");
-      }
-      // setRequesting(false);
-
-      // return;
-      if (++CheckCount != CheckCountLimit) {
+      } else if (++CheckCount != CheckCountLimit) {
         console.log(CheckCount, CheckCountLimit);
-        setTimeout(() => CheckRequestStatus(RIDE_ID, RIDER_ID), 1000);
+        setTimeout(() => CheckRequestStatus(RIDE_ID, RIDER_ID), 5000);
       } else {
         request = false;
         console.log("not accepted");
-        ToastAndroid.show("Request rejected:(", ToastAndroid.SHORT);
+        ToastAndroid.show("Request rejected :(", ToastAndroid.SHORT);
         setRequesting(false);
       }
     }
@@ -182,16 +190,20 @@ export default function rides(props) {
 
   useEffect(() => {
     (async () => {
-      const l = JSON.parse(await AsyncStorage.getItem("DFRR"));
+      let l = JSON.parse(await AsyncStorage.getItem("DFRR"));
+      PickupLocation = l.DestinationMarked.Coords;
+      Destination = l.Destination;
       // l = l;
       // console.log("props", l);
       // return;
-      //   console.log(props);
-      let RidesData = await axios.post("/rides/get", l);
+      // return;
+      console.log("Data recieved in Rides =>", l);
+      let RidesData = await axios.post("/rides/get", l.Destination);
       RidesData = RidesData.data;
+      setNoResults(false);
       setRides(RidesData);
       // console.log(RidesData);
-      console.log("Data recieved", RidesData[0], RidesData.length);
+      // console.log("Data recieved", RidesData[0], RidesData.length);
       AsyncStorage.removeItem("DFRR");
     })();
   }, []);
@@ -207,6 +219,30 @@ export default function rides(props) {
           flex: 1,
         }}
       >
+        {(() => {
+          if (NoResults) {
+            return (
+              <View
+                style={{
+                  flex: 1,
+                  alignContent: "center",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Image
+                  source={"../../../assets/images/sorry.png"}
+                  style={{
+                    width: 200,
+                    height: 200,
+                    // backgroundColor: "red",
+                  }}
+                />
+                <RNPText>No Results</RNPText>
+              </View>
+            );
+          }
+        })()}
         <FlatList
           data={Rides}
           renderItem={(item, index) => <Ride item={item.item} />}

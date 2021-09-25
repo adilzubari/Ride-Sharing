@@ -34,10 +34,10 @@ let Coords = {};
 export default function index(props) {
   const [state, dispatch] = useStateValue();
   const [CoordsState, setCoordsState] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.015,
-    longitudeDelta: 0.0121,
+    latitude: -20.276535,
+    longitude: 57.56896,
+    latitudeDelta: 0.5,
+    longitudeDelta: 0.5,
   });
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -69,16 +69,20 @@ export default function index(props) {
   });
 
   useEffect(() => {
+    let isMounted = true;
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
+        if (isMounted)
         setErrorMsg("Permission to access location was denied");
         return;
       }
-
+      
       let location = await Location.getCurrentPositionAsync({});
+      if (isMounted)
       setLocation(location);
     })();
+    return () => { isMounted=false };
   }, []);
 
   const StartRide = async () => {
@@ -133,13 +137,15 @@ export default function index(props) {
           }}
           // onRegionChangeComplete={(coords) => setCoordsState(coords)}
         >
-          {/* <MapViewDirections
-            origin={Route[0]}
-            destination={Route[1]}
-            apikey={GOOGLE_MAPS_API_KEY}
-            strokeWidth={3}
-            strokeColor={colors.primary.lighter}
-          /> */}
+          {/* {DestinationMarked == {} && (
+            <MapViewDirections
+              origin={Location}
+              destination={DestinationMarked}
+              apikey={GOOGLE_MAPS_API_KEY}
+              strokeWidth={3}
+              strokeColor={colors.primary.lighter}
+            />
+          )} */}
           {/* <Marker
             coordinate={{ latitude: 37.78825, longitude: -122.4324 }}
             image={{

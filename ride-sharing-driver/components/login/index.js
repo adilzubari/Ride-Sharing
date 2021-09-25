@@ -90,12 +90,13 @@ export default function index(props) {
       </View>
 
       <Image
-        source={{
-          uri: "https://vandanasjn-ride-sharing.web.app/static/media/logo.4258f8ac.png",
-        }}
+        source={require("../../assets/images/logo.png")}
+        // source={{
+        //   uri: "https://vandanasjn-ride-sharing.web.app/static/media/logo.4258f8ac.png",
+        // }}
         style={{
-          width: 100,
-          height: 100,
+          width: 200,
+          height: 200,
           alignSelf: "center",
           marginVertical: 20,
         }}

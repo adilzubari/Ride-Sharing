@@ -1,4 +1,4 @@
-import React, { useState, useContext, createContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -51,6 +51,7 @@ function AppBody() {
   const [{ Auth, UserType }, dispatch] = useStateValue();
 
   useEffect(() => {
+    let isMounted = true;
     async function prepare() {
       try {
         if (!AppIsReady) {
@@ -93,7 +94,9 @@ function AppBody() {
       }
     }
 
-    prepare();
+    if (isMounted) prepare();
+
+    return () => { isMounted = false };
   }, []);
 
   return (
