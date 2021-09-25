@@ -57,7 +57,7 @@ export default function SideBar() {
       url: "/",
     },
     {
-      Title: "Users",
+      Title: "Riders",
       Icon: <NaturePeopleTwoTone />,
       url: "/users",
     },
@@ -71,26 +71,26 @@ export default function SideBar() {
       Icon: <SupervisorAccountTwoTone />,
       url: "/drivers_requests",
     },
-    {
-      Title: "Bookings",
-      Icon: <LibraryBooksTwoTone />,
-      url: "/bookings",
-    },
-    {
-      Title: "Earning",
-      Icon: <MonetizationOnTwoTone />,
-      url: "/earnings",
-    },
-    {
-      Title: "Promos",
-      Icon: <LocalOfferTwoTone />,
-      url: "/promos",
-    },
-    {
-      Title: "Settings",
-      Icon: <SettingsInputComponentTwoTone />,
-      url: "/settings",
-    },
+    // {
+    //   Title: "Bookings",
+    //   Icon: <LibraryBooksTwoTone />,
+    //   url: "/bookings",
+    // },
+    // {
+    //   Title: "Earning",
+    //   Icon: <MonetizationOnTwoTone />,
+    //   url: "/earnings",
+    // },
+    // {
+    //   Title: "Promos",
+    //   Icon: <LocalOfferTwoTone />,
+    //   url: "/promos",
+    // },
+    // {
+    //   Title: "Settings",
+    //   Icon: <SettingsInputComponentTwoTone />,
+    //   url: "/settings",
+    // },
     {
       Title: "Log Out",
       Icon: <VpnKeyTwoTone />,

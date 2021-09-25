@@ -1,71 +1,149 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 // Style
 import "../../../../assets/styles/css/Body/Users/style.css";
-import { Paper } from "@material-ui/core";
+import { Button, Paper } from "@material-ui/core";
+import axios from "../../../../axios";
 
 const columns = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 150,
+    width: 250,
+    editable: true,
+    disableClickEventBubbling: true,
+    renderCell: (params) => {
+      return (
+        <span>
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: "rgb(0,150,0)",
+              color: "white",
+            }}
+            onClick={async () => {
+              const res = await axios.post("/driver/request/approve", {
+                id: params.formattedValue,
+              });
+              console.log(res.data);
+              window.location.reload();
+              // location.reload();
+            }}
+          >
+            {" "}
+            Approve{" "}
+          </Button>
+          &nbsp; &nbsp; &nbsp;
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: "rgb(200,0,0)",
+              color: "white",
+            }}
+            onClick={async () => {
+              const res = await axios.post("/driver/request/reject", {
+                id: params.formattedValue,
+              });
+              console.log(res.data);
+              window.location.reload();
+              // location.reload();
+            }}
+          >
+            {" "}
+            Reject{" "}
+          </Button>
+        </span>
+      );
+    },
+  },
+  { field: "id", headerName: "ID", width: 300 },
+  {
+    field: "Documents",
+    headerName: "Documents",
+    width: 500,
+    editable: true,
+    disableClickEventBubbling: true,
+    renderCell: (params) => {
+      const OpenImg = (img) => {
+        console.log("data:image;base64," + img.substr(50));
+
+        var image = new Image();
+        image.src = "data:image/jpg;base64," + img;
+
+        var w = window.open("");
+        w.document.write(image.outerHTML);
+      };
+
+      return (
+        <span>
+          {params.formattedValue.CarDocuments !== "" && (
+            <span>
+              <Button
+                onClick={() => OpenImg(params.formattedValue.CarDocuments)}
+                variant="outlined"
+              >
+                Car Document
+              </Button>
+              &nbsp; &nbsp;
+            </span>
+          )}
+          {params.formattedValue.DrivingLicense !== "" && (
+            <span>
+              <Button
+                onClick={() => OpenImg(params.formattedValue.DrivingLicense)}
+                variant="outlined"
+              >
+                Driving License
+              </Button>
+              &nbsp; &nbsp;
+            </span>
+          )}
+          {params.formattedValue.IdentityCard !== "" && (
+            <span>
+              <Button
+                onClick={() => OpenImg(params.formattedValue.IdentityCard)}
+                variant="outlined"
+              >
+                Identity Card
+              </Button>
+              &nbsp; &nbsp;
+            </span>
+          )}
+        </span>
+      );
+    },
+  },
+  {
+    field: "Name",
+    headerName: "Name",
+    width: 200,
     editable: true,
   },
-  { field: "id", headerName: "ID", width: 100 },
   {
-    field: "firstName",
-    headerName: "First name",
-    width: 150,
-    editable: true,
-  },
-  {
-    field: "lastName",
-    headerName: "Last name",
-    width: 150,
-    editable: true,
-  },
-  {
-    field: "email",
+    field: "Email",
     headerName: "Email",
-    width: 150,
+    width: 250,
     editable: true,
   },
   {
-    field: "mobile",
+    field: "Mobile",
     headerName: "Mobile",
     width: 150,
     editable: true,
   },
   {
-    field: "profileImage",
-    headerName: "Profile Image",
-    width: 170,
-    editable: true,
-  },
-  {
-    field: "vehicleModel",
+    field: "Vehiclemodel",
     headerName: "Vehicle Model",
     width: 170,
     editable: true,
   },
   {
-    field: "vehicleNumber",
+    field: "Vehiclenumber",
     headerName: "Vehicle Number",
     width: 180,
     editable: true,
   },
-  {
-    field: "activeStatus",
-    headerName: "Active Status",
-    width: 160,
-    editable: true,
-  },
-  {
-    field: "walletBalance",
-    headerName: "Wallet Balance",
-    width: 180,
-    editable: true,
-  },
+
   // {
   //   field: "fullName",
   //   headerName: "Full name",
@@ -117,14 +195,49 @@ const rows = [
 ];
 
 export default function DriversRequests() {
+  const [DriversRequests, setDriversRequests] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      console.log("Requesting Pending Drivers information");
+      // const r = await axios.get("/rider");
+      const r = await axios.get("/driver/requests");
+      console.log("Recieved Pending Drivers Information", r.data);
+      // setUsers(r.data);
+      let a = [];
+
+      for (let index = 0; index < r.data.length; index++) {
+        const s = r.data[index];
+        a.push({
+          actions: s._id,
+          id: s._id,
+          Name: s.Name,
+          Email: s.Email,
+          Mobile: s.Mobile,
+          Vehiclemodel: s.Vehiclemodel,
+          Vehiclenumber: s.Vehiclenumber,
+          Password: s.Password,
+          Documents: {
+            IdentityCard: s.IdentityCard,
+            CarDocuments: s.CarDocuments,
+            DrivingLicense: s.DrivingLicense,
+          },
+        });
+      }
+
+      console.log("Processed Data ", a);
+      setDriversRequests(a);
+      // setUsers(a);
+      // return;
+    })();
+  }, []);
+
   return (
     <Paper elevation={2}>
       <div className="Chart-Container">
         <DataGrid
-          rows={rows}
+          rows={DriversRequests}
           columns={columns}
-          // pageSize={5}
-          // rowsPerPageOptions={[5]}
           disableSelectionOnClick
         />
       </div>

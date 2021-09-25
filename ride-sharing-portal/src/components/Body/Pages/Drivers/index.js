@@ -1,70 +1,29 @@
-import * as React from "react";
+import axios from "../../../../axios";
+import React, { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 // Style
 import "../../../../assets/styles/css/Body/Users/style.css";
 import { Paper } from "@material-ui/core";
 
 const columns = [
+  { field: "id", headerName: "ID", width: 300 },
   {
-    field: "actions",
-    headerName: "Actions",
-    width: 150,
-    editable: true,
-  },
-  { field: "id", headerName: "ID", width: 100 },
-  {
-    field: "firstName",
-    headerName: "First name",
-    width: 150,
-    editable: true,
+    field: "Name",
+    headerName: "Name",
+    width: 200,
+    // editable: true,
   },
   {
-    field: "lastName",
-    headerName: "Last name",
-    width: 150,
-    editable: true,
-  },
-  {
-    field: "email",
+    field: "Email",
     headerName: "Email",
-    width: 150,
-    editable: true,
+    width: 250,
+    // editable: true,
   },
   {
-    field: "mobile",
+    field: "Mobile",
     headerName: "Mobile",
-    width: 150,
-    editable: true,
-  },
-  {
-    field: "profileImage",
-    headerName: "Profile Image",
-    width: 170,
-    editable: true,
-  },
-  {
-    field: "vehicleModel",
-    headerName: "Vehicle Model",
-    width: 170,
-    editable: true,
-  },
-  {
-    field: "vehicleNumber",
-    headerName: "Vehicle Number",
-    width: 180,
-    editable: true,
-  },
-  {
-    field: "activeStatus",
-    headerName: "Active Status",
-    width: 160,
-    editable: true,
-  },
-  {
-    field: "walletBalance",
-    headerName: "Wallet Balance",
-    width: 180,
-    editable: true,
+    width: 200,
+    // editable: true,
   },
   // {
   //   field: "fullName",
@@ -92,37 +51,65 @@ const test = {
   walletBalance: "test",
 };
 
-const rows = [
-  {
-    id: 0,
-    firstName: "Muhammad",
-    lastName: "Adil",
-    email: "adilzubari852@gmail.com",
-    mobile: "+923476456792",
-    profileImage: "img://khaskjdhahoidaSDAfasfASFAsdASD324EWFASF",
-    vehicleModel: "Toyota",
-    vehicleNumber: "RIA-0765",
-    activeStatus: false,
-    walletBalance: 1087,
-  },
-  { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
-  { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
-  { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
-  { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
-  { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: null },
-  { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
-  { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 },
-  { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
-  { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 },
-];
+// Email: "adilzubari852@gmail.com"
+// Mobile: "+9234764566792"
+// Name: "Muhammad Adil"
+// _id: "613fb28758c39e548e42a376"
 
-export default function Drivers() {
+export default function DataGridDemo() {
+  const [Users, setUsers] = useState([
+    // {
+    //   id: 0,
+    //   FullName: "Muhammad Adil",
+    //   email: "adilzubari852@gmail.com",
+    //   mobile: "+923476456792",
+    //   profileImage: "img://khaskjdhahoidaSDAfasfASFAsdASD324EWFASF",
+    //   vehicleModel: "Toyota",
+    //   vehicleNumber: "RIA-0765",
+    //   activeStatus: false,
+    //   walletBalance: 1087,
+    // },
+    // { id: 1, FullName: "Snow", firstName: "Jon", age: 35 },
+    // { id: 2, FullName: "Lannister", firstName: "Cersei", age: 42 },
+    // { id: 3, FullName: "Lannister", firstName: "Jaime", age: 45 },
+    // { id: 4, FullName: "Stark", firstName: "Arya", age: 16 },
+    // { id: 5, FullName: "Targaryen", firstName: "Daenerys", age: null },
+    // { id: 6, FullName: "Melisandre", firstName: null, age: 150 },
+    // { id: 7, FullName: "Clifford", firstName: "Ferrara", age: 44 },
+    // { id: 8, FullName: "Frances", firstName: "Rossini", age: 36 },
+    // { id: 9, FullName: "Roxie", firstName: "Harvey", age: 65 },
+  ]);
+  useEffect(() => {
+    (async () => {
+      console.log("Requesting Drivers information");
+      // const r = await axios.get("/rider");
+      const r = await axios.get("/driver");
+      console.log("Recieved Drivers Information", r.data);
+      // setUsers(r.data);
+      let a = [];
+
+      for (let index = 0; index < r.data.length; index++) {
+        const s = r.data[index];
+        a.push({
+          id: s._id,
+          Name: s.Name,
+          Email: s.Email,
+          Mobile: s.Mobile,
+        });
+      }
+
+      console.log("Processed Data ", a);
+      setUsers(a);
+      // return;
+    })();
+  }, []);
   return (
     <Paper elevation={2}>
       <div className="Chart-Container">
         <DataGrid
-          rows={rows}
+          rows={Users}
           columns={columns}
+          key={Users._id}
           // pageSize={5}
           // rowsPerPageOptions={[5]}
           disableSelectionOnClick

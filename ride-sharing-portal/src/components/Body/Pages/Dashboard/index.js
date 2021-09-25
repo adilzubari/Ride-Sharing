@@ -1,6 +1,7 @@
 import { Paper } from "@material-ui/core";
+import axios from "../../../../axios";
 import { PeopleAltOutlined } from "@material-ui/icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import GoogleMapReact from "google-map-react";
 import CurrencyFormat from "react-currency-format";
 
@@ -37,34 +38,105 @@ export default function Dashboard() {
     {
       icon: (
         <img
-          src="https://swiftx-new.web.app/static/media/money1.1e54addd.jpg"
+          src="https://cdn-icons-png.flaticon.com/128/1177/1177568.png"
           alt="Alternate"
+          width={100}
+          height={100}
+          style={{
+            margin: 30,
+          }}
         />
       ),
-      title: "Today",
-      amount: 990,
+      title: "Riders",
+      amount: 0,
     },
     {
       icon: (
         <img
-          src="https://swiftx-new.web.app/static/media/money2.2e3870f3.jpg"
+          src="https://freepngimg.com/thumb/taxi_driver/33090-6-taxi-driver-clipart.png"
           alt="Alternate"
+          width={150}
+          height={100}
+          style={{
+            margin: 30,
+          }}
         />
       ),
-      title: "This Month",
-      amount: 9066,
+      title: "Drivers",
+      amount: 0,
     },
     {
       icon: (
         <img
-          src="https://swiftx-new.web.app/static/media/money3.1d26e667.jpg"
+          src="https://vwofstreetsboro.files.wordpress.com/2015/02/new-girl-driver-cartoon.jpg"
           alt="Alternate"
+          width={140}
+          height={120}
+          style={{
+            margin: 20,
+          }}
         />
       ),
-      title: "Total",
-      amount: 1000862,
+      title: "Pending Drivers",
+      amount: 0,
     },
   ]);
+
+  useEffect(() => {
+    (async () => {
+      console.log("Requesting Dashboard's data");
+      const r = await axios.get("/dashboard");
+      console.log("Recieved Dashboard data", r.data);
+      setCards([
+        {
+          icon: (
+            <img
+              src="https://cdn-icons-png.flaticon.com/128/1177/1177568.png"
+              alt="Alternate"
+              width={100}
+              height={100}
+              style={{
+                margin: 30,
+              }}
+            />
+          ),
+          title: "Riders",
+          amount: r.data.rider_count,
+        },
+        {
+          icon: (
+            <img
+              src="https://freepngimg.com/thumb/taxi_driver/33090-6-taxi-driver-clipart.png"
+              alt="Alternate"
+              width={150}
+              height={100}
+              style={{
+                margin: 30,
+              }}
+            />
+          ),
+          title: "Drivers",
+          amount: r.data.driver_count,
+        },
+        {
+          icon: (
+            <img
+              src="https://vwofstreetsboro.files.wordpress.com/2015/02/new-girl-driver-cartoon.jpg"
+              alt="Alternate"
+              width={140}
+              height={120}
+              style={{
+                margin: 20,
+              }}
+            />
+          ),
+          title: "Pending Drivers",
+          amount: r.data.driver_request_count,
+        },
+      ]);
+    })();
+  }, []);
+
   return (
     <div>
       <div className="Dashboard_Cards_Container">
@@ -78,7 +150,6 @@ export default function Dashboard() {
                   value={Item.amount}
                   displayType={"text"}
                   thousandSeparator={true}
-                  prefix={"Rs. "}
                 />
               </h3>
             </div>
